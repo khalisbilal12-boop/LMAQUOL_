@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMAQUOL - 3D Neon Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Orbitron:wght@500;700;800&family=Inter:wght@400;600;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <audio id="bgMusic" src="Love Story Berwali (REMIX).mp3" preload="auto" loop></audio>
+
+    <canvas id="bg-3d-canvas"></canvas>
+
+    <div class="ambient-light blue-glow"></div>
+    <div class="ambient-light red-glow"></div>
+
+    <!-- واجهة الدخول والتسجيل 3D -->
+    <main class="main-wrapper" id="loginWrapper">
+        <div class="tilt-container" id="tiltCard">
+
+            <div class="neon-board-section">
+                <div class="neon-frame" id="neonFrame">
+                    <h1 class="neon-text" id="neonText">Welcome to<br>LMAQUOL</h1>
+                    <p class="neon-sub">&bull; SYSTEM ACCESS &bull;</p>
+                </div>
+
+                <div class="wire"></div>
+                <button type="button" class="switch-box" id="powerSwitch" aria-label="Toggle Neon Light">
+                    <span class="switch-toggle"></span>
+                    <span class="switch-label" id="switchLabel">OFF</span>
+                </button>
+            </div>
+
+            <div class="login-form-section">
+
+                <div id="signInContainer" class="auth-box">
+                    <div class="form-header">
+                        <span class="badge">LMAQUOL VAULT</span>
+                        <h2>Sign in</h2>
+                        <p>Flip the switch, then enter credentials</p>
+                    </div>
+
+                    <form id="loginForm">
+                        <div class="input-group">
+                            <label for="emailInput">EMAIL</label>
+                            <input type="email" id="emailInput" placeholder="agent@lmaquol.dev" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="passInput">PASSWORD</label>
+                            <input type="password" id="passInput" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="submit-btn">Sign in</button>
+                    </form>
+
+                    <div class="auth-switch">
+                        <span>Don't have an account?</span>
+                        <button type="button" id="toSignUpBtn" class="link-btn">Create account</button>
+                    </div>
+                </div>
+
+                <div id="signUpContainer" class="auth-box hidden-form">
+                    <div class="form-header">
+                        <span class="badge">NEW AGENT</span>
+                        <h2>Create account</h2>
+                        <p>Register your identity in LMAQUOL</p>
+                    </div>
+
+                    <form id="registerForm">
+                        <div class="input-group">
+                            <label for="regNameInput">FULL NAME</label>
+                            <input type="text" id="regNameInput" placeholder="Enter your name" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="regEmailInput">GMAIL / EMAIL</label>
+                            <input type="email" id="regEmailInput" placeholder="example@gmail.com" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="regPassInput">PASSWORD</label>
+                            <input type="password" id="regPassInput" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="submit-btn">Create Account</button>
+                    </form>
+
+                    <div class="auth-switch">
+                        <span>Already have an account?</span>
+                        <button type="button" id="toSignInBtn" class="link-btn">Sign in</button>
+                    </div>
+                </div>
+
+                <div class="color-controls">
+                    <span>TUBE COLOR</span>
+                    <div class="dots">
+                        <button type="button" class="color-dot dual active" data-theme="dual" aria-label="Dual Blue and Red"></button>
+                        <button type="button" class="color-dot blue" data-theme="blue" aria-label="Neon Blue"></button>
+                        <button type="button" class="color-dot red" data-theme="red" aria-label="Neon Red"></button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- صفحات LMAQUOL التفاعلية -->
+    <section class="dashboard-view hidden" id="dashboardView" dir="rtl">
+
+        <header class="camiloin-header">
+            <div class="header-brand">
+                <button type="button" class="menu-btn" id="menuToggleBtn" aria-label="القائمة">&#9776;</button>
+                <div class="brand-info">
+                    <div class="brand-title">LMAQUOL</div>
+                    <div class="brand-sub">3D COMMAND HUB &bull; <span id="userDisplay">AGENT</span></div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span class="crown-badge">&#9889;</span>
+                <button type="button" id="logoutBtn" class="logout-btn">خروج</button>
+            </div>
+        </header>
+
+        <!-- القائمة الجانبية للأقسام الكاملة (من ثلاث شرطات) -->
+        <div class="drawer-backdrop hidden" id="drawerBackdrop"></div>
+        <aside class="side-drawer hidden" id="sideDrawer">
+            <div class="drawer-top">
+                <span class="drawer-brand">LMAQUOL</span>
+                <button type="button" class="drawer-close-btn" id="closeDrawerBtn" aria-label="إغلاق">&times;</button>
+            </div>
+
+            <button type="button" class="drawer-link" data-drawer="home">&#8962; الرئيسية</button>
+            <button type="button" class="drawer-link" data-drawer="inspect">&#128197; فحص سيارة مستعملة</button>
+            <button type="button" class="drawer-link" data-drawer="repair">&#128295; طلب إصلاح سيارة</button>
+            <button type="button" class="drawer-link" data-drawer="sos">&#128680; طلب إغاثة طارئة (SOS)</button>
+            <button type="button" class="drawer-link" data-drawer="tech">&#128100; بوابة التقني</button>
+            <button type="button" class="drawer-link" data-drawer="partners">&#127970; المحلات الشريكة في كازا</button>
+            <button type="button" class="drawer-link drawer-admin-highlight" data-drawer="admin">&#128737; لوحة الإدارة</button>
+
+            <div class="drawer-footer">
+                <strong>LMAQUOL SYSTEM</strong>
+                <span>0632723628 - الدار البيضاء</span>
+            </div>
+        </aside>
+
+        <div class="camiloin-content">
+
+            <!-- صفحة 1: الرئيسية -->
+            <div class="tab-panel active" id="tab-home">
+                <div class="hero-card">
+                    <div class="pill-tag">&#9889; منصة LMAQUOL الذكية في الدار البيضاء</div>
+                    <h2 class="hero-logo">LMAQUOL</h2>
+                    <h3 class="hero-heading">تجربة رقمية متكاملة... قبل أن تشتري، وقبل أن تتعطل</h3>
+                    <p class="hero-desc">فحص دقيق للسيارات المستعملة، إصلاح بضمان رسمي، وإغاثة فورية تصلك أينما كنت في الدار البيضاء بواجهة نيون تفاعلية.</p>
+
+                    <div class="hero-btns">
+                        <button type="button" class="btn-neon-blue" id="quickBookInspection">احجز فحص سيارة</button>
+                        <button type="button" class="btn-glass" id="quickBookRepair">طلب إصلاح</button>
+                        <button type="button" class="btn-neon-red" id="quickSosBtn">إغاثة طارئة</button>
+                    </div>
+
+                    <div class="mini-stats">
+                        <div class="mini-stat blue-stat">
+                            <span>فنيين معتمدين</span>
+                            <strong>4</strong>
+                        </div>
+                        <div class="mini-stat red-stat">
+                            <span>ورشات شريكة</span>
+                            <strong>6</strong>
+                        </div>
+                        <div class="mini-stat dual-stat">
+                            <span>استجابة الطوارئ</span>
+                            <strong class="neon-highlight">24/7</strong>
+                        </div>
+                    </div>
+                    <div class="location-note">مسجد الحسن الثاني - الدار البيضاء &bull; LMAQUOL 3D SYSTEM</div>
+                </div>
+
+                <div class="section-head">
+                    <span class="kicker">كيف يعمل الأمر</span>
+                    <h2>أربع خطوات حتى تطمئن على سيارتك</h2>
+                </div>
+
+                <div class="steps-list">
+                    <div class="step-card">
+                        <span class="step-num">01</span>
+                        <div>
+                            <h3>اختر الخدمة</h3>
+                            <p>فحص، إصلاح، أو إغاثة طارئة بضغطة واحدة.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <span class="step-num">02</span>
+                        <div>
+                            <h3>حدد موقعك</h3>
+                            <p>اختر حيك في الدار البيضاء أو فعّل تحديد الموقع GPS.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <span class="step-num">03</span>
+                        <div>
+                            <h3>فني معتمد يقبل الطلب</h3>
+                            <p>تتابع حالة الطلب مباشرة من هاتفك حتى وصول الفني.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <span class="step-num">04</span>
+                        <div>
+                            <h3>تقرير وضمان وتقييم</h3>
+                            <p>تستلم تقريرك أو شهادة الضمان، ثم تقيّم الخدمة بالنجوم.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-head">
+                    <span class="kicker">خدماتنا</span>
+                    <h2>ثلاث خدمات، معيار واحد من الجودة</h2>
+                    <p class="section-sub">من الفحص قبل الشراء إلى الإصلاح الميداني والإغاثة الفورية، كل طلب يمر عبر فني معتمد وتقرير موثق.</p>
+                </div>
+
+                <div class="service-box blue-accent">
+                    <h3>طلب فحص سيارة مستعملة</h3>
+                    <p>فني معتمد يفحص السيارة قبل الشراء: المحرك، الهيكل، الأجهزة، وتاريخ الأعطال.</p>
+                    <ul>
+                        <li>ابتداءً من 150 DH</li>
+                        <li>تحديد الموقع تلقائياً بـ GPS</li>
+                        <li>تقرير مفصل بعد الفحص</li>
+                    </ul>
+                    <button type="button" class="link-action" id="cardInspectBtn">ابدأ الفحص &larr;</button>
+                </div>
+
+                <div class="service-box dual-accent">
+                    <h3>طلب إصلاح سيارة</h3>
+                    <p>صف العطل، وسيصلك فني مختص إلى موقعك مع ورشة شريكة معتمدة في كازا.</p>
+                    <ul>
+                        <li>شهادة ضمان رسمية عند الإنجاز</li>
+                        <li>تقييم الفني بعد الخدمة</li>
+                        <li>ورشات شريكة في كل الأحياء</li>
+                    </ul>
+                    <button type="button" class="link-action" id="cardRepairBtn">اطلب الإصلاح &larr;</button>
+                </div>
+
+                <div class="service-box sos-box">
+                    <h3>طلب إغاثة طارئة (SOS)</h3>
+                    <p>عطل مفاجئ على الطريق؟ اضغط زر الإغاثة وسيتم تحديد موقعك تلقائياً وإرسال أقرب فني.</p>
+                    <ul>
+                        <li>تحديد الموقع تلقائياً</li>
+                        <li>استجابة فورية</li>
+                        <li>متاح طوال اليوم</li>
+                    </ul>
+                    <button type="button" class="link-action sos-link" id="cardSosBtn">إغاثة الآن &larr;</button>
+                </div>
+
+                <div class="rating-banner">
+                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <h3>تقييمك يصنع الفرق</h3>
+                    <p>بعد كل خدمة مكتملة تقيّم الفني بالنجوم، فتصل تقييماتك مباشرة إلى لوحة الإدارة لضمان أعلى مستويات الجودة.</p>
+                    <button type="button" class="btn-neon-blue" data-goto="tracking">تتبع طلباتي</button>
+                </div>
+
+                <footer class="camiloin-footer">
+                    <strong>LMAQUOL</strong>
+                    <span>الدار البيضاء &bull; نظام تفاعلي متكامل</span>
+                </footer>
+            </div>
+
+            <!-- صفحة 2: حجز خدمة -->
+            <div class="tab-panel" id="tab-booking">
+                <div class="booking-header">
+                    <span class="kicker">حجز الخدمة</span>
+                    <h2 id="bookingMainTitle">طلب فحص سيارة مستعملة</h2>
+                    <p id="bookingMainDesc">اختر الماركة والموديل والباقة، وسيصلك فني معتمد لإجراء الفحص الكامل في موقعك.</p>
+                </div>
+
+                <div class="service-mode-switch">
+                    <button type="button" class="mode-btn active" id="modeInspectBtn">
+                        <span>&#128663;</span>
+                        <span>فحص سيارة مستعملة</span>
+                    </button>
+                    <button type="button" class="mode-btn" id="modeRepairBtn">
+                        <span>&#128295;</span>
+                        <span>إصلاح سيارة</span>
+                    </button>
+                </div>
+
+                <div class="wizard-progress" id="wizardProgress">
+                    <div class="w-step active" data-wstep="1">
+                        <div class="w-bar"></div>
+                        <span id="wlabel-1">1. السيارة</span>
+                    </div>
+                    <div class="w-step" data-wstep="2">
+                        <div class="w-bar"></div>
+                        <span id="wlabel-2">2. الموقع</span>
+                    </div>
+                    <div class="w-step" data-wstep="3">
+                        <div class="w-bar"></div>
+                        <span id="wlabel-3">3. الباقة والتواصل</span>
+                    </div>
+                </div>
+
+                <form id="bookingForm" class="panel-card">
+                    <!-- المرحلة 1: السيارة -->
+                    <div class="wizard-pane active" id="wpane-1">
+                        <h3 class="pane-title">1. السيارة</h3>
+
+                        <div class="c-group">
+                            <label for="carBrandSelect">ماركة السيارة</label>
+                            <select id="carBrandSelect" required>
+                                <option value="">اختر الماركة</option>
+                                <optgroup label="الأكثر طلباً في المغرب">
+                                    <option value="Dacia">Dacia (داسيا)</option>
+                                    <option value="Renault">Renault (رونو)</option>
+                                    <option value="Peugeot">Peugeot (بيجو)</option>
+                                    <option value="Citroën">Citroën (سيتروين)</option>
+                                    <option value="Volkswagen">Volkswagen (فولكسفاغن)</option>
+                                    <option value="Hyundai">Hyundai (هيونداي)</option>
+                                    <option value="Kia">Kia (كيا)</option>
+                                    <option value="Toyota">Toyota (تويوتا)</option>
+                                    <option value="Ford">Ford (فورد)</option>
+                                    <option value="Fiat">Fiat (فيات)</option>
+                                    <option value="Opel">Opel (أوبل)</option>
+                                    <option value="Nissan">Nissan (نيسان)</option>
+                                    <option value="Seat">Seat (سيات)</option>
+                                    <option value="Skoda">Skoda (سكودا)</option>
+                                    <option value="Suzuki">Suzuki (سوزوكي)</option>
+                                </optgroup>
+                                <optgroup label="السيارات الفاخرة والألمانية">
+                                    <option value="Mercedes-Benz">Mercedes-Benz (مرسيدس)</option>
+                                    <option value="BMW">BMW (بي إم دبليو)</option>
+                                    <option value="Audi">Audi (أودي)</option>
+                                    <option value="Porsche">Porsche (بورش)</option>
+                                    <option value="Land Rover">Land Rover (لاند روفر / رينج روفر)</option>
+                                    <option value="Volvo">Volvo (فولفو)</option>
+                                    <option value="Jaguar">Jaguar (جاكوار)</option>
+                                    <option value="Lexus">Lexus (لكزس)</option>
+                                    <option value="Mini">Mini (ميني كوبر)</option>
+                                    <option value="Alfa Romeo">Alfa Romeo (ألفا روميو)</option>
+                                    <option value="Maserati">Maserati (مازيراتي)</option>
+                                    <option value="Jeep">Jeep (جيب)</option>
+                                </optgroup>
+                                <optgroup label="ماركات آسيوية وأمريكية وصينية بالمغرب">
+                                    <option value="Honda">Honda (هوندا)</option>
+                                    <option value="Mitsubishi">Mitsubishi (ميتسوبيشي)</option>
+                                    <option value="Mazda">Mazda (مازدا)</option>
+                                    <option value="Chevrolet">Chevrolet (شيفروليه)</option>
+                                    <option value="SsangYong">SsangYong (سانغ يونغ)</option>
+                                    <option value="MG">MG (إم جي)</option>
+                                    <option value="BYD">BYD (بي واي دي)</option>
+                                    <option value="Chery">Chery (شيري)</option>
+                                    <option value="Geely">Geely (جيلي)</option>
+                                    <option value="Dongfeng">Dongfeng (دونغ فينغ)</option>
+                                    <option value="DFSK">DFSK (دي إف إس كي)</option>
+                                    <option value="Haval">Haval (هافال)</option>
+                                    <option value="Changan">Changan (شانجان)</option>
+                                    <option value="Cupra">Cupra (كوبرا)</option>
+                                    <option value="DS Automobiles">DS Automobiles (دي إس)</option>
+                                    <option value="Tesla">Tesla (تسلا)</option>
+                                    <option value="Isuzu">Isuzu (إيسوزو)</option>
+                                    <option value="Mahindra">Mahindra (ماهيندرا)</option>
+                                    <option value="أخرى">ماركة أخرى</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="c-group">
+                            <label for="carModelInput">موديل السيارة</label>
+                            <input type="text" id="carModelInput" placeholder="اكتب موديل السيارة" required>
+                            <span class="field-hint">مثال: Logan, Duster, Golf, C-Class</span>
+                        </div>
+
+                        <div class="c-group">
+                            <label>نوع الوقود</label>
+                            <div class="fuel-grid">
+                                <button type="button" class="fuel-card active" data-fuel="ديزل (مازوط)" data-price="200">
+                                    <span class="fuel-icon">&#9981;</span>
+                                    <strong>ديزل</strong>
+                                    <small>مازوط</small>
+                                </button>
+                                <button type="button" class="fuel-card" data-fuel="بنزين (ليصانص)" data-price="200">
+                                    <span class="fuel-icon">&#128167;</span>
+                                    <strong>بنزين</strong>
+                                    <small>ليصانص</small>
+                                </button>
+                                <button type="button" class="fuel-card" data-fuel="هيبريد (Hybrid)" data-price="200">
+                                    <span class="fuel-icon">&#127811;</span>
+                                    <strong>هيبريد</strong>
+                                    <small>Hybrid</small>
+                                </button>
+                                <button type="button" class="fuel-card" data-fuel="كهربائي (Electric)" data-price="200">
+                                    <span class="fuel-icon">&#9889;</span>
+                                    <strong>كهربائي</strong>
+                                    <small>Electric</small>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="c-group hidden-field" id="faultDescriptionGroup">
+                            <label for="faultDescInput">2. وصف العطل &mdash; ما الذي يحدث للسيارة؟</label>
+                            <textarea id="faultDescInput" rows="3" placeholder="مثال: صوت غريب من المحرك عند التسارع، ويرتفع الحرارة بعد 15 دقيقة..."></textarea>
+                            <span class="field-hint">صف الأعراض بالتفصيل</span>
+                        </div>
+
+                        <button type="button" class="btn-neon-blue full-w" id="nextToStep2Btn">التالي &larr;</button>
+                    </div>
+
+                    <!-- المرحلة 2: الموقع -->
+                    <div class="wizard-pane" id="wpane-2">
+                        <h3 class="pane-title">2. الموقع</h3>
+
+                        <div class="c-group">
+                            <label for="casaDistrictSelect">حي الدار البيضاء</label>
+                            <select id="casaDistrictSelect">
+                                <option value="">اختر الحي</option>
+                                <option value="المعاريف (Maarif)">المعاريف (Maarif)</option>
+                                <option value="أنفا / عين الدياب (Anfa - Ain Diab)">أنفا / عين الدياب (Anfa - Ain Diab)</option>
+                                <option value="سيدي معروف (Sidi Maarouf)">سيدي معروف (Sidi Maarouf)</option>
+                                <option value="البرنوصي (Sidi Bernoussi)">البرنوصي (Sidi Bernoussi)</option>
+                                <option value="عين السبع (Ain Sebaa)">عين السبع (Ain Sebaa)</option>
+                                <option value="الحي المحمدي (Hay Mohammadi)">الحي المحمدي (Hay Mohammadi)</option>
+                                <option value="الحي الحسني / الألفة (Hay Hassani - Oulfa)">الحي الحسني / الألفة (Hay Hassani - Oulfa)</option>
+                                <option value="مرس السلطان / درب السلطان">مرس السلطان / درب السلطان</option>
+                                <option value="بوركون / كوتي (Bourgogne - Gauthier)">بوركون / كوتي (Bourgogne - Gauthier)</option>
+                                <option value="كاليفورنيا / الوازيس (Californie - Oasis)">كاليفورنيا / الوازيس (Californie - Oasis)</option>
+                                <option value="عين الشق (Ain Chock)">عين الشق (Ain Chock)</option>
+                                <option value="سيدي عثمان / مولاي رشيد">سيدي عثمان / مولاي رشيد</option>
+                                <option value="بوسكورة (Bouskoura)">بوسكورة (Bouskoura)</option>
+                                <option value="دار بوعزة / طماريس (Dar Bouazza)">دار بوعزة / طماريس (Dar Bouazza)</option>
+                                <option value="المحمدية (Mohammedia)">المحمدية (Mohammedia)</option>
+                            </select>
+                        </div>
+
+                        <button type="button" class="gps-btn" id="detectGpsBtn">
+                            <span>&#127919;</span>
+                            <span id="gpsBtnText">تحديد موقعي بالـ GPS</span>
+                        </button>
+                        <span class="field-hint">اختياري: التحديد الدقيق يسرّع وصول الفني إليك.</span>
+
+                        <div class="wizard-nav-btns">
+                            <button type="button" class="btn-neon-blue full-w" id="nextToStep3Btn">التالي &larr;</button>
+                            <button type="button" class="btn-glass full-w" id="backToStep1Btn">&rarr; السابق</button>
+                        </div>
+                    </div>
+
+                    <!-- المرحلة 3: الباقة والتواصل + صورة السيارة الإجبارية -->
+                    <div class="wizard-pane" id="wpane-3">
+                        <h3 class="pane-title">3. الباقة والتواصل</h3>
+
+                        <div class="c-group">
+                            <label for="clientFullNameInput">الاسم الكامل</label>
+                            <input type="text" id="clientFullNameInput" placeholder="الاسم الكامل" required>
+                        </div>
+
+                        <div class="c-group">
+                            <label for="clientPhoneInput">رقم الهاتف</label>
+                            <input type="tel" id="clientPhoneInput" placeholder="06XXXXXXXX" required>
+                            <span class="field-hint">يستعمله الفني للتواصل معك فقط</span>
+                        </div>
+
+                        <div class="c-group" id="packageSelectGroup">
+                            <label>اختر باقة الفحص</label>
+
+                            <div class="package-cards-list">
+                                <button type="button" class="package-card active" data-pkg="Basic — DH 200 (فحص شامل للمحرك والهيكل وأجهزة الكشف)" data-amount="200">
+                                    <div class="pkg-top-row">
+                                        <span class="pkg-tier">Basic</span>
+                                        <strong class="pkg-price">DH 200</strong>
+                                    </div>
+                                    <p class="pkg-desc">فحص شامل للمحرك والهيكل وأجهزة الكشف</p>
+                                </button>
+
+                                <button type="button" class="package-card" data-pkg="Full — DH 350 (فحص كامل مع تقرير مفصل ومراجعة الحاسوب)" data-amount="350">
+                                    <div class="pkg-top-row">
+                                        <span class="pkg-tier">Full</span>
+                                        <strong class="pkg-price">DH 350</strong>
+                                    </div>
+                                    <p class="pkg-desc">فحص كامل مع تقرير مفصل ومراجعة الحاسوب</p>
+                                </button>
+
+                                <button type="button" class="package-card" data-pkg="Fast — DH 150 (فحص سريع للأعطال الظاهرة وحالة المحرك)" data-amount="150">
+                                    <div class="pkg-top-row">
+                                        <span class="pkg-tier">Fast</span>
+                                        <strong class="pkg-price">DH 150</strong>
+                                    </div>
+                                    <p class="pkg-desc">فحص سريع للأعطال الظاهرة وحالة المحرك</p>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="c-group" id="carPhotoUploadGroup">
+                            <input type="file" id="carPhotoInput" accept="image/*" class="hidden-file-input">
+                            <button type="button" class="photo-pick-btn" id="pickCarPhotoBtn">
+                                <span>&#128247;</span>
+                                <span id="carPhotoBtnText">أرسل صورة السيارة</span>
+                            </button>
+                            <span class="field-hint" id="carPhotoHint">إجباري: اختر صورة السيارة من الألبوم قبل إرسال الطلب.</span>
+                            <div class="car-photo-preview hidden" id="carPhotoPreviewBox">
+                                <img id="carPhotoPreviewImg" src="" alt="صورة السيارة المختارة">
+                                <span id="carPhotoFileName"></span>
+                            </div>
+                        </div>
+
+                        <p class="photo-error-msg hidden" id="photoErrorMsg">يرجى اختيار صورة السيارة من الألبوم أولاً قبل إرسال الطلب.</p>
+
+                        <div class="wizard-nav-btns">
+                            <button type="submit" class="btn-neon-blue full-w" id="submitBookingBtn">أرسل طلب الفحص</button>
+                            <button type="button" class="btn-glass full-w" id="backToStep2Btn">&rarr; السابق</button>
+                        </div>
+                        <p class="form-footer-note">أكمل السيارة والوصف والموقع والاسم ورقم الهاتف وصورة السيارة لتفعيل الإرسال.</p>
+                    </div>
+                </form>
+
+                <!-- تأكيد استلام الطلب مباشرة -->
+                <div class="panel-card hidden order-confirmed-card" id="orderConfirmedCard">
+                    <div class="confirmed-check-icon">&#10003;</div>
+                    <h3 id="confirmedTitle">تم استلام طلب الفحص</h3>
+                    <p>سيقبل أحد فنيينا الطلب قريباً، وستتابع حالته مباشرة من صفحة التتبع.</p>
+                    <div class="confirmed-code-box">
+                        <span>رقم الطلب</span>
+                        <strong id="confirmedOrderId">-</strong>
+                        <small>&#10003; تم حفظ الطلب في هذا المتصفح تلقائياً</small>
+                    </div>
+                    <button type="button" class="btn-neon-blue full-w" id="goTrackConfirmedBtn">&#9200; تتبع الطلب</button>
+                    <button type="button" class="btn-glass full-w" id="createNewOrderBtn">طلب جديد</button>
+                </div>
+            </div>
+
+            <!-- صفحة SOS: خدمة الطوارئ وإغاثة فورية -->
+            <div class="tab-panel" id="tab-sos">
+                <div class="tracking-top-head">
+                    <span class="kicker sos-kicker">خدمة الطوارئ</span>
+                    <h2>طلب إغاثة طارئة (SOS)</h2>
+                    <p>اترك بياناتك واضغط زر الإغاثة. يتم تحديد موقعك تلقائياً وإرسال أقرب فني متاح إليك.</p>
+                </div>
+
+                <div class="panel-card sos-panel-card">
+                    <div class="c-group">
+                        <label for="sosFullNameInput">الاسم الكامل</label>
+                        <input type="text" id="sosFullNameInput" placeholder="الاسم الكامل">
+                    </div>
+
+                    <div class="c-group">
+                        <label for="sosPhoneInput">رقم الهاتف</label>
+                        <input type="tel" id="sosPhoneInput" placeholder="06XXXXXXXX">
+                        <span class="field-hint">يستعمله الفني للتواصل معك فقط</span>
+                    </div>
+
+                    <div class="c-group">
+                        <label for="sosDistrictSelect">حيّك في الدار البيضاء</label>
+                        <select id="sosDistrictSelect">
+                            <option value="">اختر الحي</option>
+                            <option value="عين الشق (Ain Chock)">عين الشق</option>
+                            <option value="المعاريف (Maarif)">المعاريف</option>
+                            <option value="أنفا / عين الدياب (Anfa - Ain Diab)">أنفا / عين الدياب</option>
+                            <option value="سيدي معروف (Sidi Maarouf)">سيدي معروف</option>
+                            <option value="البرنوصي (Sidi Bernoussi)">البرنوصي</option>
+                            <option value="عين السبع (Ain Sebaa)">عين السبع</option>
+                            <option value="الحي المحمدي (Hay Mohammadi)">الحي المحمدي</option>
+                            <option value="الحي الحسني / الألفة (Hay Hassani - Oulfa)">الحي الحسني / الألفة</option>
+                            <option value="مرس السلطان / درب السلطان">مرس السلطان / درب السلطان</option>
+                            <option value="بوركون / كوتي (Bourgogne - Gauthier)">بوركون / كوتي</option>
+                            <option value="كاليفورنيا / الوازيس (Californie - Oasis)">كاليفورنيا / الوازيس</option>
+                            <option value="سيدي عثمان / مولاي رشيد">سيدي عثمان / مولاي رشيد</option>
+                            <option value="بوسكورة (Bouskoura)">بوسكورة</option>
+                            <option value="دار بوعزة / طماريس (Dar Bouazza)">دار بوعزة / طماريس</option>
+                            <option value="المحمدية (Mohammedia)">المحمدية</option>
+                        </select>
+                    </div>
+
+                    <div class="sos-beacon-wrap">
+                        <button type="button" class="sos-beacon-btn" id="sosDispatchBtn" disabled>
+                            <span class="sos-beacon-icon">&#128680;</span>
+                            <span>إغاثة الآن</span>
+                        </button>
+                        <p class="sos-helper-status" id="sosHelperStatus">&#127919; أدخل اسمك ورقم هاتفك لتفعيل زر الإغاثة</p>
+                    </div>
+
+                    <div class="sos-geo-alert hidden" id="sosGeoNotice">
+                        &#9888; تم رفض إذن تحديد الموقع. فعّله من إعدادات المتصفح. اختر حيك للمتابعة.
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة 3: التتبع المباشر -->
+            <div class="tab-panel" id="tab-tracking">
+                <div class="tracking-top-head">
+                    <span class="kicker">تتبع مباشر</span>
+                    <h2>تابع طلبك لحظة بلحظة</h2>
+                    <p>أدخل رقم الطلب الذي استلمته بعد الحجز، أو اختر من طلباتك المحفوظة على هذا الجهاز.</p>
+                </div>
+
+                <div class="panel-card search-order-card">
+                    <label for="trackSearchInput" class="search-label">أدخل رقم الطلب</label>
+                    <input type="text" id="trackSearchInput" class="order-uuid-input" placeholder="CML-XXXXXXXX أو UUID">
+                    <button type="button" class="btn-neon-blue full-w" id="searchOrderBtn">&#128269; بحث</button>
+                    <p class="search-msg hidden" id="searchOrderMsg"></p>
+                </div>
+
+                <div class="recent-orders-section">
+                    <div class="recent-orders-header">
+                        <span class="recent-icon">&#128338;</span>
+                        <h3>طلباتي الأخيرة</h3>
+                    </div>
+
+                    <div class="panel-card empty-orders-card" id="emptyOrdersState">
+                        <div class="empty-car-icon">&#128663;</div>
+                        <p class="empty-orders-text">لا توجد طلبات محفوظة في هذا المتصفح بعد.</p>
+                        <button type="button" class="btn-glass empty-book-btn" id="emptyFirstBookingBtn">احجز خدمتك الأولى</button>
+                    </div>
+
+                    <div class="orders-list" id="ordersListContainer"></div>
+                </div>
+
+                <div class="panel-card hidden" id="selectedOrderDetailsCard">
+                    <div class="tracking-badge-row">
+                        <span class="pill-tag">&#128225; تفاصيل الطلب المباشر</span>
+                        <span class="order-code" id="trackOrderCode">-</span>
+                    </div>
+
+                    <div class="track-timeline">
+                        <div class="t-node done">
+                            <span class="t-dot"></span>
+                            <div>
+                                <strong>تم استلام الطلب</strong>
+                                <small>تم تسجيل معطيات السيارة والموقع والصورة</small>
+                            </div>
+                        </div>
+                        <div class="t-node active">
+                            <span class="t-dot"></span>
+                            <div>
+                                <strong id="timelineStatusTitle">بانتظار قبول الفني</strong>
+                                <small id="timelineStatusSub">الطلب معروض على رادار الفنيين المباشر</small>
+                            </div>
+                        </div>
+                        <div class="t-node" id="timelineStep3">
+                            <span class="t-dot"></span>
+                            <div>
+                                <strong>إنجاز الفحص / الإصلاح وإصدار التقرير</strong>
+                                <small>تقرير رقمي وشهادة ضمان من LMAQUOL</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tracked-car-photo-box hidden" id="trackedCarPhotoBox">
+                        <img id="trackedCarPhotoImg" src="" alt="صورة السيارة في التتبع">
+                    </div>
+
+                    <div class="status-box" id="trackingStatusBox">
+                        <div class="status-row"><span>رقم الطلب:</span><strong id="activeOrderIdText">-</strong></div>
+                        <div class="status-row"><span>نوع الخدمة:</span><strong id="activeServiceText">-</strong></div>
+                        <div class="status-row"><span>السيارة والماركة:</span><strong id="activeCarText">-</strong></div>
+                        <div class="status-row"><span>نوع الوقود:</span><strong id="activeFuelText">-</strong></div>
+                        <div class="status-row"><span>الباقة / الوصف:</span><strong id="activeDetailText">-</strong></div>
+                        <div class="status-row"><span>المبلغ:</span><strong id="activeAmountText">-</strong></div>
+                        <div class="status-row"><span>الموقع والحي:</span><strong id="activeLocText">-</strong></div>
+                        <div class="status-row"><span>العميل والهاتف:</span><strong id="activeClientText">-</strong></div>
+                        <div class="status-row"><span>الفني المسؤول:</span><strong id="activeTechText">بانتظار القبول</strong></div>
+                        <div class="status-row"><span>حالة الطلب:</span><strong class="neon-highlight" id="activeStatusText">بانتظار فني</strong></div>
+                    </div>
+
+                    <div class="hero-btns">
+                        <button type="button" class="btn-neon-blue full-w" id="goToOrderReportBtn">عرض التقرير الرقمي والضمان</button>
+                    </div>
+                </div>
+
+                <div class="panel-card tracking-note-card">
+                    <span>&#128269;</span>
+                    <p>تُحدّث حالة طلبك تلقائياً من بوابة التقني، وعند اكتمال الخدمة ستتمكن من تقييم الفني مباشرة.</p>
+                </div>
+            </div>
+
+            <!-- صفحة 4: التقرير الفني وشهادة الضمان -->
+            <div class="tab-panel" id="tab-report">
+                <div class="tracking-top-head">
+                    <h2>تقرير الفني وشهادة الضمان</h2>
+                    <p>اطّلع على تقرير كل خدمة مكتملة، وشهادة الضمان الخاصة بالإصلاح، ثم قيّم تجربتك.</p>
+                </div>
+
+                <div class="panel-card search-order-card">
+                    <label for="reportSearchInput" class="search-label">أدخل رقم الطلب</label>
+                    <input type="text" id="reportSearchInput" class="order-uuid-input" placeholder="CML-XXXXXXXX أو UUID">
+                    <button type="button" class="btn-neon-blue full-w" id="searchReportBtn">&#128269; بحث</button>
+                </div>
+
+                <div class="recent-orders-section">
+                    <div class="recent-orders-header">
+                        <span class="recent-icon">&#128196;</span>
+                        <h3>طلباتي على هذا الجهاز</h3>
+                    </div>
+
+                    <div class="panel-card empty-orders-card" id="emptyReportOrdersState">
+                        <div class="empty-car-icon">&#128663;</div>
+                        <p class="empty-orders-text">لا توجد طلبات محفوظة في هذا المتصفح بعد.</p>
+                        <button type="button" class="btn-glass empty-book-btn" id="reportFirstBookingBtn">احجز خدمتك الأولى</button>
+                    </div>
+
+                    <div class="orders-list" id="reportOrdersListContainer"></div>
+                </div>
+
+                <div class="panel-card hidden" id="reportViewerCard">
+                    <div class="tracking-badge-row">
+                        <span class="pill-tag">&#128736; التقرير الرقمي للفحص</span>
+                        <span class="order-code" id="viewerOrderCode">-</span>
+                    </div>
+
+                    <div class="health-score-box">
+                        <strong class="health-score-num" id="viewerHealthScore">-- /100</strong>
+                        <div>
+                            <strong>مؤشر الصحة العام</strong>
+                            <small id="viewerCarLabel">-</small>
+                        </div>
+                    </div>
+
+                    <div class="status-box" id="viewerReportBreakdown">
+                        <div class="status-row"><span>المحرك:</span><strong id="vScoreEngine">-</strong></div>
+                        <div class="status-row"><span>ناقل الحركة:</span><strong id="vScoreGear">-</strong></div>
+                        <div class="status-row"><span>الفرامل:</span><strong id="vScoreBrakes">-</strong></div>
+                        <div class="status-row"><span>التعليق والتوجيه:</span><strong id="vScoreSusp">-</strong></div>
+                        <div class="status-row"><span>الكهرباء والأجهزة:</span><strong id="vScoreElec">-</strong></div>
+                        <div class="status-row"><span>الهيكل والطلاء:</span><strong id="vScoreBody">-</strong></div>
+                        <div class="status-row"><span>المقصورة الداخلية:</span><strong id="vScoreCabin">-</strong></div>
+                        <div class="status-row"><span>الإطارات:</span><strong id="vScoreTires">-</strong></div>
+                        <div class="status-row"><span>الحالة العامة:</span><strong id="vOverallState">-</strong></div>
+                        <div class="status-row"><span>توصيات للعميل:</span><strong id="vRecommendations">-</strong></div>
+                        <div class="status-row"><span>ملاحظات الفني:</span><strong class="neon-highlight" id="vTechNotes">-</strong></div>
+                    </div>
+
+                    <div class="rating-section-box">
+                        <h3>تقييم الفني</h3>
+                        <div class="rating-picker" id="starPicker">
+                            <button type="button" class="star-btn active" data-val="1">&#9733;</button>
+                            <button type="button" class="star-btn active" data-val="2">&#9733;</button>
+                            <button type="button" class="star-btn active" data-val="3">&#9733;</button>
+                            <button type="button" class="star-btn active" data-val="4">&#9733;</button>
+                            <button type="button" class="star-btn active" data-val="5">&#9733;</button>
+                        </div>
+                        <p class="rating-feedback" id="ratingFeedback">التقييم المختار: 5 / 5 نجوم</p>
+                        <button type="button" class="btn-glass full-w" id="sendRatingBtn">إرسال التقييم للإدارة</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة 5: بوابة التقني -->
+            <div class="tab-panel" id="tab-tech">
+                <div class="panel-card" id="techPinLockCard">
+                    <span class="kicker">بوابة التقني</span>
+                    <h2>تسجيل دخول الفني</h2>
+                    <p class="panel-desc">أدخل رمز PIN الخاص بك للوصول إلى الطلبات المباشرة.</p>
+
+                    <div class="c-group">
+                        <label for="techPinInput">رمز PIN</label>
+                        <div class="pass-input-wrap">
+                            <input type="password" id="techPinInput" maxlength="4" placeholder="••••" autocomplete="off">
+                            <span class="pass-lock-icon">&#128273;</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-neon-blue full-w" id="techPinLoginBtn">دخول</button>
+                    <p class="photo-error-msg hidden" id="techPinError">رمز PIN غير صحيح.</p>
+                </div>
+
+                <div class="hidden" id="techWorkspaceContent">
+                    <div class="panel-card tech-welcome-card">
+                        <div>
+                            <span class="kicker">مرحباً بك</span>
+                            <h2 id="techActiveName">سفيان فنون</h2>
+                            <small id="techPinBadge">رمز الدخول مفعل</small>
+                        </div>
+                        <button type="button" class="btn-glass tech-logout-btn" id="techLogoutBtn">&#8627; تسجيل الخروج</button>
+                    </div>
+
+                    <div class="panel-card">
+                        <div class="radar-head">
+                            <div>
+                                <h3>رادار الطلبات المباشرة</h3>
+                                <small>طلبات بانتظار فني الآن - يتم التحديث تلقائياً</small>
+                            </div>
+                            <span class="radar-pulse-dot">&#9673;</span>
+                        </div>
+                        <div id="techRadarContainer" class="tech-cards-stack">
+                            <p class="admin-empty-msg">لا توجد طلبات جديدة في الدار البيضاء حالياً.</p>
+                        </div>
+                    </div>
+
+                    <div class="panel-card">
+                        <h3>مهامي</h3>
+                        <div id="techMyTasksContainer" class="tech-cards-stack">
+                            <p class="admin-empty-msg">لا توجد مهام نشطة أو مكتملة حالياً.</p>
+                        </div>
+                    </div>
+
+                    <div class="panel-card hidden" id="techActiveMissionCard">
+                        <div class="tracking-badge-row">
+                            <span class="pill-tag">&#9881; إدارة المهمة الحالية</span>
+                            <span class="order-code" id="missionOrderCode">-</span>
+                        </div>
+
+                        <div class="status-box">
+                            <div class="status-row"><span>الخدمة:</span><strong id="missionServiceText">-</strong></div>
+                            <div class="status-row"><span>العميل:</span><strong id="missionClientText">-</strong></div>
+                            <div class="status-row"><span>السيارة والوقود:</span><strong id="missionCarText">-</strong></div>
+                            <div class="status-row"><span>الموقع:</span><strong id="missionLocText">-</strong></div>
+                            <div class="status-row"><span>الحالة الحالية:</span><strong class="neon-highlight" id="missionStatusText">-</strong></div>
+                        </div>
+
+                        <div id="missionStageButtonsBox" class="mission-stage-btns"></div>
+                    </div>
+
+                    <div class="panel-card hidden" id="techDigitalReportCard">
+                        <div class="report-card-top">
+                            <div>
+                                <h2>التقرير الرقمي للفحص</h2>
+                                <p id="reportTargetCarTitle">-</p>
+                            </div>
+                            <button type="button" class="close-x-btn" id="closeDigitalReportBtn" aria-label="إغلاق">&times;</button>
+                        </div>
+
+                        <div class="health-score-box">
+                            <strong class="health-score-num" id="liveHealthScore">-- /100</strong>
+                            <div>
+                                <strong>مؤشر الصحة المبدئي</strong>
+                                <small>يُحسب تلقائياً من تقييم المعايير أدناه</small>
+                            </div>
+                        </div>
+
+                        <h3 class="pane-title">تقييم المعايير (من 1 إلى 10)</h3>
+                        <div id="criteriaRatingContainer"></div>
+
+                        <h3 class="pane-title" style="margin-top:18px;">تقييم الحالة العامة</h3>
+
+                        <div class="c-group">
+                            <label>الحالة الخارجية</label>
+                            <div class="state-four-grid" data-statekey="exterior">
+                                <button type="button" class="state-opt-btn" data-val="ممتازة">ممتازة</button>
+                                <button type="button" class="state-opt-btn" data-val="جيدة">جيدة</button>
+                                <button type="button" class="state-opt-btn" data-val="متوسطة">متوسطة</button>
+                                <button type="button" class="state-opt-btn" data-val="ضعيفة">ضعيفة</button>
+                            </div>
+                        </div>
+
+                        <div class="c-group">
+                            <label>حالة المقصورة</label>
+                            <div class="state-four-grid" data-statekey="cabin">
+                                <button type="button" class="state-opt-btn" data-val="ممتازة">ممتازة</button>
+                                <button type="button" class="state-opt-btn" data-val="جيدة">جيدة</button>
+                                <button type="button" class="state-opt-btn" data-val="متوسطة">متوسطة</button>
+                                <button type="button" class="state-opt-btn" data-val="ضعيفة">ضعيفة</button>
+                            </div>
+                        </div>
+
+                        <div class="c-group">
+                            <label>الحالة الميكانيكية</label>
+                            <div class="state-four-grid" data-statekey="mechanical">
+                                <button type="button" class="state-opt-btn" data-val="ممتازة">ممتازة</button>
+                                <button type="button" class="state-opt-btn" data-val="جيدة">جيدة</button>
+                                <button type="button" class="state-opt-btn" data-val="متوسطة">متوسطة</button>
+                                <button type="button" class="state-opt-btn" data-val="ضعيفة">ضعيفة</button>
+                            </div>
+                        </div>
+
+                        <div class="c-group">
+                            <label for="techRecommendationsInput">توصيات للعميل (اختياري)</label>
+                            <textarea id="techRecommendationsInput" rows="2" placeholder="مثال: تغيير زيت المحرك خلال 1000 كم"></textarea>
+                        </div>
+
+                        <div class="c-group">
+                            <label for="techNotesInput">ملاحظات الفني</label>
+                            <textarea id="techNotesInput" rows="3" placeholder="صف ما تم فحصه أو إصلاحه"></textarea>
+                        </div>
+
+                        <div class="wizard-nav-btns">
+                            <button type="button" class="btn-neon-blue full-w" id="submitDigitalReportBtn">متابعة إلى القرار &larr;</button>
+                            <button type="button" class="btn-glass full-w" id="cancelDigitalReportBtn">إلغاء</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة 6: المحلات الشريكة في كازا -->
+            <div class="tab-panel" id="tab-partners">
+                <div class="tracking-top-head">
+                    <span class="kicker">شبكة الدار البيضاء</span>
+                    <h2>المحلات والورشات الشريكة في كازا</h2>
+                    <p>ورشات معتمدة لتنفيذ الإصلاحات والضمانات في مختلف أحياء الدار البيضاء.</p>
+                </div>
+
+                <div class="panel-card">
+                    <h3>ورشة المعاريف المركزية للميكانيك والتشخيص</h3>
+                    <p class="panel-desc">المعاريف &bull; تشخيص إلكتروني، محرك، تعليق، وضمان معتمد.</p>
+                </div>
+                <div class="panel-card">
+                    <h3>ورشة سيدي معروف للكهرباء والتكييف</h3>
+                    <p class="panel-desc">سيدي معروف &bull; فحص الحاسوب، أنظمة الفرامل ABS، وتكييف السيارات.</p>
+                </div>
+                <div class="panel-card">
+                    <h3>ورشة أنفا والحي الحسني للهيكل والطلاء</h3>
+                    <p class="panel-desc">أنفا / الحي الحسني &bull; قياس سماكة الطلاء، إصلاح الهيكل، والتلميع.</p>
+                </div>
+            </div>
+
+            <!-- صفحة 7: لوحة الإدارة -->
+            <div class="tab-panel" id="tab-admin">
+
+                <div class="panel-card admin-login-card" id="adminLockCard">
+                    <span class="kicker">لوحة الإدارة</span>
+                    <h2>دخول المسؤول</h2>
+                    <p class="panel-desc">هذه الصفحة محمية بكلمة سر. لن تُحفظ كلمة السر خارج هذه الجلسة.</p>
+
+                    <div class="c-group">
+                        <label for="adminPassInput">كلمة السر</label>
+                        <div class="pass-input-wrap">
+                            <input type="password" id="adminPassInput" placeholder="••••" autocomplete="off">
+                            <span class="pass-lock-icon">&#128274;</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-neon-blue full-w" id="adminLoginBtn">دخول</button>
+                    <p class="photo-error-msg hidden" id="adminAuthError">كلمة السر غير صحيحة.</p>
+                </div>
+
+                <div class="hidden" id="adminDashboardContent">
+                    <div class="admin-top-bar">
+                        <div>
+                            <span class="kicker">لوحة الإدارة</span>
+                            <h2>إدارة LMAQUOL</h2>
+                            <p class="admin-sub-note">الطلبات والفنيون والورشات والضمانات في مكان واحد.</p>
+                        </div>
+                        <div class="admin-action-btns">
+                            <button type="button" class="btn-glass admin-mini-btn" id="adminRefreshBtn">&#8635; تحديث</button>
+                            <button type="button" class="btn-neon-red admin-mini-btn" id="adminLockBtn">&#8627; خروج</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-stats-grid">
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-top">
+                                <span>إجمالي الطلبات</span>
+                                <span class="stat-ico">&#128196;</span>
+                            </div>
+                            <strong class="stat-big-num" id="adminTotalOrders">0</strong>
+                            <small id="adminActiveOrdersText">0 نشطة</small>
+                        </div>
+
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-top">
+                                <span>مداخيل مكتملة</span>
+                                <span class="stat-ico">&#128181;</span>
+                            </div>
+                            <strong class="stat-big-num" id="adminCompletedRevenue">DH 0</strong>
+                            <small id="adminCompletedCountText">0 خدمة مكتملة</small>
+                        </div>
+
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-top">
+                                <span>عمولة المنصة</span>
+                                <span class="stat-ico">%</span>
+                            </div>
+                            <strong class="stat-big-num" id="adminCommissionAmount">DH 0</strong>
+                            <small>20% من كل خدمة</small>
+                        </div>
+
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-top">
+                                <span>صافي الورشات</span>
+                                <span class="stat-ico">&#128188;</span>
+                            </div>
+                            <strong class="stat-big-num" id="adminWorkshopNet">DH 0</strong>
+                            <small>بعد خصم العمولة</small>
+                        </div>
+
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-top">
+                                <span>متوسط التقييم</span>
+                                <span class="stat-ico">&#9734;</span>
+                            </div>
+                            <strong class="stat-big-num" id="adminAvgRating">5.0</strong>
+                            <small id="adminRatingCountText">من 5 نجوم</small>
+                        </div>
+                    </div>
+
+                    <div class="admin-main-tabs">
+                        <button type="button" class="admin-tab-btn active" data-admintab="orders">الطلبات</button>
+                        <button type="button" class="admin-tab-btn" data-admintab="techs">الفنيون والتقييمات</button>
+                        <button type="button" class="admin-tab-btn" data-admintab="warranties">سجل الضمانات</button>
+                    </div>
+
+                    <div class="admin-sub-panel active" id="admin-sub-orders">
+                        <div class="admin-filter-chips">
+                            <button type="button" class="filter-chip active" data-filter="الكل">الكل</button>
+                            <button type="button" class="filter-chip" data-filter="في الطريق إليك">في الطريق إليك</button>
+                            <button type="button" class="filter-chip" data-filter="مكتمل">مكتمل</button>
+                            <button type="button" class="filter-chip" data-filter="تم قبول الطلب">تم قبول الطلب</button>
+                            <button type="button" class="filter-chip" data-filter="بانتظار فني">بانتظار فني</button>
+                            <button type="button" class="filter-chip" data-filter="جاري الفحص">جاري الفحص</button>
+                        </div>
+
+                        <div class="panel-card admin-table-card">
+                            <div id="adminOrdersRows" class="admin-rows-list">
+                                <p class="admin-empty-msg">لا توجد طلبات مسجلة بعد.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-sub-panel" id="admin-sub-techs">
+                        <div class="panel-card">
+                            <div class="tech-rating-row">
+                                <div>
+                                    <h3>سفيان فنون</h3>
+                                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                                    <small id="adminTechRatingSummary">5.0 من 5 - 0 تقييم</small>
+                                </div>
+                                <span class="order-item-badge" id="adminTechTasksBadge">0 مهمة</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-sub-panel" id="admin-sub-warranties">
+                        <div class="panel-card" id="adminWarrantiesContainer">
+                            <p class="admin-empty-msg">لم تُصدر شهادات ضمان بعد.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- الشريط السفلي بتأثير الموجة النيون (4 - NEON WAVE) -->
+        <nav class="bottom-nav neon-wave-nav" id="bottomNav">
+            <svg class="neon-wave-svg" id="neonWaveSvg" viewBox="0 0 500 72" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                    <linearGradient id="waveStrokeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#00f3ff" />
+                        <stop offset="55%" stop-color="#00f3ff" />
+                        <stop offset="100%" stop-color="#ff003c" />
+                    </linearGradient>
+                    <filter id="waveGlow" x="-20%" y="-40%" width="140%" height="180%">
+                        <feGaussianBlur stdDeviation="3.5" result="blur" />
+                        <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
+                <path id="neonWavePath" d="M 8,18 L 492,18" fill="none" stroke="url(#waveStrokeGrad)" stroke-width="2.2" filter="url(#waveGlow)" />
+            </svg>
+
+            <button type="button" class="nav-item active" data-tab="home">
+                <span class="nav-icon">&#8962;</span>
+                <span>الرئيسية</span>
+            </button>
+            <button type="button" class="nav-item" data-tab="booking">
+                <span class="nav-icon">&#128197;</span>
+                <span>حجز</span>
+            </button>
+            <button type="button" class="nav-item" data-tab="tracking">
+                <span class="nav-icon">&#10148;</span>
+                <span>التتبع</span>
+            </button>
+            <button type="button" class="nav-item" data-tab="report">
+                <span class="nav-icon">&#128196;</span>
+                <span>التقرير</span>
+            </button>
+            <button type="button" class="nav-item" data-tab="admin">
+                <span class="nav-icon">&#128737;</span>
+                <span>الإدارة</span>
+            </button>
+        </nav>
+
+    </section>
+
+</body>
+</html>
